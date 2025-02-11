@@ -2,7 +2,6 @@
 #include <iomanip> 
 #include <fstream>
 #include <map>
-#include <string_view>
 #include <chrono>
 
 #include "../include/datastructures.hpp"
@@ -27,19 +26,19 @@ int main(int argc, char* argv[])
 
     while(getline(fh, line)) {
         size_t idx = line.find(';');
-
         if (idx == std::string::npos) {
             std::cerr << "Skipping malformed line (missing ';'): " << line << '\n';
             continue;
         }
 
-        std::string_view city_view(line.c_str(), idx);  
-        std::string_view val_view(line.c_str() + idx + 1, line.length() - idx - 1);
+        char *str = line.data();
+        str[idx] = '\0';
 
         try {
-            float value = std::stof(std::string(val_view));
+            auto& data = store[str];
+            str = str + idx + 1;
+            float value = std::stof(str);
 
-            auto& data = store[std::string(city_view)];
             data.sum += value;
             data.count += 1;
 
