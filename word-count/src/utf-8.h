@@ -3,14 +3,19 @@
 
 #include <cstdint>
 
-typedef struct UTF8DecoderState {
+struct UTF8DecoderState {
     // Accumulated Unicode codepoint
     uint32_t codepoint = 0;
     // The number of bytes of used by the codepoint
     uint32_t number_bytes = 0;
     // Number of bytes remaining for the current character.
     int remaining_bytes = 0;
-} decoder_state_t;
+};
+
+enum WordState {
+    IN_WORD,
+    OUT_WORD
+};
 
 // Processe a sigle byte and update the decoder state.
 //

@@ -2,40 +2,45 @@
 
 int utf8_decode(UTF8DecoderState& state, uint16_t byte, uint32_t* codepoint)
 {
-    if((byte & 0x80) == 0){
-        state.number_bytes = 1;
-        state.remaining_bytes = 1;
-    }
-
-    if((byte & 0xE0) == 0xC0){
-        state.number_bytes = 2;
-        state.remaining_bytes = 2;  
-    }
-
-    if((byte & 0xF0) == 0xE0){
-        state.number_bytes = 3;
-        state.remaining_bytes = 3;
-    }
-
-    if((byte & 0xF8) == 0xF0){
-        state.number_bytes = 4;
-        state.remaining_bytes = 4;
-    }
-
-    if(state.remaining_bytes > 0){
-        *codepoint = *codepoint | (byte << (8 * (state.remaining_bytes-1)));
+    if(state.remaining_bytes == 0) {
+        if((byte & 0x80) == 0) {
+            state.codepoint = byte;
+            state.number_bytes = 1;
+            state.remaining_bytes = 0;
+            *codepoint = state.codepoint;
+            return 1;
+        } else if((byte & 0xE0) == 0xC0) { 
+            state.codepoint = byte & 0x1F;
+            state.number_bytes = 2;
+            state.remaining_bytes = 1;
+            return 0;
+        } else if((byte & 0xF0) == 0xE0) { 
+            state.codepoint = byte & 0x0F;
+            state.number_bytes = 3;
+            state.remaining_bytes = 2;
+            return 0;
+        } else if((byte & 0xF8) == 0xF0) { 
+            state.codepoint = byte & 0x07;
+            state.number_bytes = 4;
+            state.remaining_bytes = 3;
+            return 0;
+        } else {
+            return -1;
+        }
+    } else if((byte & 0xC0) == 0x80) { 
+        state.codepoint = (state.codepoint << 6) | (byte & 0x3F);
         state.remaining_bytes--;
         
-        if(state.remaining_bytes == 0){
-            state.codepoint = *codepoint;
+        if(state.remaining_bytes == 0) {
+            *codepoint = state.codepoint;
             return state.number_bytes;
         }
         return 0;
+    } else {
+        state.remaining_bytes = 0;
+        return -1;
     }
-
-    return -1;
 }
-
 
 bool utf8_is_letter(uint32_t codepoint)
 {
@@ -53,7 +58,6 @@ bool utf8_is_letter(uint32_t codepoint)
         (codepoint >= 0x4E00 && codepoint <= 0x9FFF)  
     );
 }
-
 
 bool utf8_is_space(uint32_t codepoint)
 {

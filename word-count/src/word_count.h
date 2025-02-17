@@ -10,4 +10,10 @@ struct WordCountFlags {
     bool chars = false; // count the number of total characters
 };
 
+struct WordCounts{
+    int words = 0;
+    int lines = 0;
+    int chars = 0;
+};
+
 void word_count(const WordCountFlags& flags, const std::vector<std::string>& files);
